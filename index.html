@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz Website</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .hidden { display: none; }
+    button {
+      background: #1e1e1e;
+      color: white;
+      border: 2px solid #444;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    button:hover {
+      background: #333;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    footer {
+      margin-top: 30px;
+      font-size: 0.8em;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Quiz Website 🧠</h1>
+
+<div id="start">
+  <h2>Wähle Schwierigkeitsstufe</h2>
+  <button onclick="selectDifficulty('einfach')">Einfach</button>
+  <button onclick="selectDifficulty('normal')">Normal</button>
+  <button onclick="selectDifficulty('schwer')">Schwer</button>
+</div>
+
+<div id="groupSelection" class="hidden">
+  <h2>Wähle Gruppe</h2>
+  <div id="groupButtons"></div>
+</div>
+
+<div id="quiz" class="hidden">
+  <h2 id="questionTitle">Frage</h2>
+  <div id="questionText" class="question"></div>
+  <div id="answers"></div>
+  <button onclick="nextQuestion()">Nächste Frage</button>
+</div>
+
+<div id="result" class="hidden">
+  <h2>Dein Ergebnis</h2>
+  <p id="scoreText"></p>
+  <button onclick="location.reload()">Nochmal spielen</button>
+</div>
+
+<footer>Created by Lennart</footer>
+
+<script>
+const questions = {
+  einfach: {
+    1: [
+      { question: "Wie viele Beine hat eine Spinne?", answers: ["8", "6", "10", "12"], correct: 0 },
+      { question: "Welches Tier ist das größte auf der Erde?", answers: ["Blauwal", "Elefant", "Giraffe", "Hai"], correct: 0 },
+      { question: "Was ist 5 + 7?", answers: ["12", "13", "10", "14"], correct: 0 },
+      { question: "Wie viele Farben hat ein Regenbogen?", answers: ["7", "6", "8", "5"], correct: 0 },
+      { question: "Welcher Planet ist der Sonne am nächsten?", answers: ["Merkur", "Venus", "Erde", "Mars"], correct: 0 },
+      { question: "Wie alt wird ein Hamster ca.?", answers: ["2 Jahre", "5 Jahre", "1 Jahr", "10 Jahre"], correct: 0 },
+      { question: "Wie lang schläft ein Mensch durchschnittlich pro Nacht?", answers: ["8 Stunden", "6 Stunden", "10 Stunden", "12 Stunden"], correct: 0 },
+      { question: "Wie viele Zähne hat ein Erwachsener?", answers: ["32", "30", "28", "34"], correct: 0 },
+      { question: "Wie viele Kontinente gibt es?", answers: ["7", "5", "6", "8"], correct: 0 },
+      { question: "Wie viele Augen hat eine Biene?", answers: ["5", "2", "6", "3"], correct: 0 }
+    ],
+    2: [
+      { question: "Wie viele Tage hat ein Jahr?", answers: ["365", "366", "360", "364"], correct: 0 },
+      { question: "Wie heißt die Hauptstadt von Deutschland?", answers: ["Berlin", "München", "Hamburg", "Köln"], correct: 0 },
+      { question: "Welche Farbe hat ein Apfel meist?", answers: ["Rot", "Blau", "Gelb", "Lila"], correct: 0 },
+      { question: "Was ist H2O?", answers: ["Wasser", "Sauerstoff", "Kohlendioxid", "Salz"], correct: 0 },
+      { question: "Wie viele Finger hat ein Mensch?", answers: ["10", "8", "12", "9"], correct: 0 },
+      { question: "Wie alt ist Deutschland (seit 1990)?", answers: ["Über 30 Jahre", "20 Jahre", "15 Jahre", "50 Jahre"], correct: 0 },
+      { question: "Was ist ein Smartphone?", answers: ["Ein Handy", "Ein Fernseher", "Ein Auto", "Ein Tisch"], correct: 0 },
+      { question: "Wie viele Minuten hat eine Stunde?", answers: ["60", "100", "30", "45"], correct: 0 },
+      { question: "Was ist ein Zebra?", answers: ["Ein Tier", "Ein Fisch", "Ein Vogel", "Ein Käfer"], correct: 0 },
+      { question: "Wie viele Beine hat ein Mensch?", answers: ["2", "4", "6", "3"], correct: 0 }
+    ],
+    3: [
+      { question: "Was ist die Hauptstadt von Frankreich?", answers: ["Paris", "London", "Rom", "Berlin"], correct: 0 },
+      { question: "Wie viele Stunden hat ein Tag?", answers: ["24", "12", "48", "30"], correct: 0 },
+      { question: "Was ist 9 × 3?", answers: ["27", "18", "36", "30"], correct: 0 },
+      { question: "Wie viele Monate hat ein Jahr?", answers: ["12", "10", "11", "13"], correct: 0 },
+      { question: "Welcher Monat hat 28 Tage?", answers: ["Alle", "Februar", "März", "Juni"], correct: 0 },
+      { question: "Wie viele Ohren hat ein Mensch?", answers: ["2", "4", "1", "3"], correct: 0 },
+      { question: "Was ist ein PC?", answers: ["Ein Computer", "Ein Fernseher", "Ein Radio", "Ein Buch"], correct: 0 },
+      { question: "Wie viele Planeten hat unser Sonnensystem?", answers: ["8", "7", "9", "10"], correct: 0 },
+      { question: "Was ist schwerer: 1kg Federn oder 1kg Blei?", answers: ["Gleich schwer", "Federn", "Blei", "Kommt drauf an"], correct: 0 },
+      { question: "Wie viele Augen hat ein Würfel?", answers: ["21", "6", "12", "18"], correct: 0 }
+    ]
+  },
+  normal: {
+    1: [
+      { question: "Wie hoch ist der Eiffelturm?", answers: ["300 m", "200 m", "400 m", "150 m"], correct: 0 },
+      { question: "Wie viele Zähne hat ein Hai durchschnittlich?", answers: ["300", "100", "50", "200"], correct: 0 },
+      { question: "Wer malte die Mona Lisa?", answers: ["Leonardo da Vinci", "Picasso", "Michelangelo", "Van Gogh"], correct: 0 },
+      { question: "Was ist der größte Planet?", answers: ["Jupiter", "Saturn", "Erde", "Mars"], correct: 0 },
+      { question: "Wie viele Sekunden hat eine Minute?", answers: ["60", "100", "30", "45"], correct: 0 },
+      { question: "Wie viele Liter Blut hat ein Mensch ungefähr?", answers: ["5 Liter", "10 Liter", "3 Liter", "7 Liter"], correct: 0 },
+      { question: "Wie lange braucht Licht von der Sonne zur Erde?", answers: ["8 Minuten", "1 Sekunde", "1 Stunde", "30 Sekunden"], correct: 0 },
+      { question: "Wie viele Knochen hat ein Mensch?", answers: ["206", "100", "300", "180"], correct: 0 },
+      { question: "Wie lang ist der Nil?", answers: ["ca. 6.650 km", "ca. 5.000 km", "ca. 7.200 km", "ca. 4.300 km"], correct: 0 },
+      { question: "Wie groß ist Deutschland?", answers: ["ca. 357.000 km²", "ca. 300.000 km²", "ca. 400.000 km²", "ca. 280.000 km²"], correct: 0 }
+    ],
+    2: [
+      { question: "Was ist die Hauptstadt von Kanada?", answers: ["Ottawa", "Toronto", "Vancouver", "Montreal"], correct: 0 },
+      { question: "Wie viele Chromosomen hat der Mensch?", answers: ["46", "23", "92", "50"], correct: 0 },
+      { question: "Welches Tier legt Eier?", answers: ["Ente", "Hund", "Katze", "Kuh"], correct: 0 },
+      { question: "Wie heißt der höchste Berg der Welt?", answers: ["Mount Everest", "K2", "Zugspitze", "Anden"], correct: 0 },
+      { question: "Wie viele Spieler hat eine Fußballmannschaft?", answers: ["11", "10", "12", "9"], correct: 0 },
+      { question: "Wie viele Länder gibt es weltweit?", answers: ["195", "200", "180", "150"], correct: 0 },
+      { question: "Wie lang ist ein Marathon?", answers: ["42,195 km", "40 km", "45 km", "50 km"], correct: 0 },
+      { question: "Wie viele Bundesländer hat Deutschland?", answers: ["16", "15", "17", "14"], correct: 0 },
+      { question: "Wie viele Stunden hat ein Jahr?", answers: ["8.760", "10.000", "6.000", "7.500"], correct: 0 },
+      { question: "Wie viele Länder grenzen an Deutschland?", answers: ["9", "8", "7", "10"], correct: 0 }
+    ],
+    3: [
+      { question: "Wie heißt das chemische Zeichen für Gold?", answers: ["Au", "Ag", "Go", "Gd"], correct: 0 },
+      { question: "Wie viel wiegt ein Liter Wasser?", answers: ["1 kg", "0,5 kg", "1,5 kg", "2 kg"], correct: 0 },
+      { question: "Was ist ein Dreieck?", answers: ["Eine geometrische Form", "Ein Tier", "Ein Baum", "Ein Planet"], correct: 0 },
+      { question: "Wie viele Sinne hat der Mensch?", answers: ["5", "4", "6", "7"], correct: 0 },
+      { question: "Was bedeutet „WWW“?", answers: ["World Wide Web", "Weltweiter Windweg", "Wissenschaftlicher Weltraumweg", "Web Word Way"], correct: 0 },
+      { question: "Wie viele Kalorien hat ein Apfel ca.?", answers: ["ca. 52 kcal", "ca. 100 kcal", "ca. 150 kcal", "ca. 30 kcal"], correct: 0 },
+      { question: "Wie tief ist der Marianengraben?", answers: ["ca. 11.000 m", "ca. 5.000 m", "ca. 15.000 m", "ca. 9.000 m"], correct: 0 },
+      { question: "Wie viele Tasten hat ein Klavier?", answers: ["88", "100", "72", "60"], correct: 0 },
+      { question: "Wie groß ist ein Fußballtor?", answers: ["7,32 x 2,44 m", "8 x 3 m", "6 x 2 m", "7 x 2 m"], correct: 0 },
+      { question: "Wie viele Inseln hat Deutschland?", answers: ["ca. 80", "ca. 20", "ca. 200", "ca. 150"], correct: 0 }
+    ]
+  },
+  schwer: {
+    1: [
+      { question: "Wie viele Elemente hat das Periodensystem?", answers: ["118", "100", "120", "112"], correct: 0 },
+      { question: "Was ist der kleinste Knochen im menschlichen Körper?", answers: ["Steigbügel", "Schlüsselbein", "Mittelfuß", "Elle"], correct: 0 },
+      { question: "Wer schrieb 'Faust'?", answers: ["Goethe", "Schiller", "Kafka", "Lessing"], correct: 0 },
+      { question: "Wie alt wurde Albert Einstein?", answers: ["76", "80", "70", "65"], correct: 0 },
+      { question: "Wie viele Herzklappen hat ein Mensch?", answers: ["4", "2", "6", "3"], correct: 0 },
+      { question: "Wie lang ist der Äquator?", answers: ["ca. 40.075 km", "ca. 30.000 km", "ca. 45.000 km", "ca. 50.000 km"], correct: 0 },
+      { question: "Wie viele Liter Luft atmet ein Mensch pro Tag?", answers: ["ca. 10.000 l", "ca. 5.000 l", "ca. 20.000 l", "ca. 15.000 l"], correct: 0 },
+      { question: "Wie viele Muskeln hat der Mensch?", answers: ["über 650", "über 500", "über 300", "über 700"], correct: 0 },
+      { question: "Wie lange dauert ein Herzschlag?", answers: ["ca. 0,8 Sekunden", "1 Sekunde", "0,5 Sekunden", "2 Sekunden"], correct: 0 },
+      { question: "Wie viele Liter Wasser trinkt ein Mensch im Leben ca.?", answers: ["ca. 50.000 Liter", "ca. 30.000 Liter", "ca. 100.000 Liter", "ca. 10.000 Liter"], correct: 0 }
+    ],
+    2: [
+      { question: "Welches Tier hat das größte Gehirn?", answers: ["Pottwal", "Elefant", "Blauwal", "Mensch"], correct: 0 },
+      { question: "Was ist die chemische Formel für Kochsalz?", answers: ["NaCl", "KCl", "NaOH", "CaCl2"], correct: 0 },
+      { question: "Was ist ein Parallelogramm?", answers: ["Geometrische Figur", "Tier", "Musikinstrument", "Chemisches Element"], correct: 0 },
+      { question: "Wie viele Hertz hat der Strom in Deutschland?", answers: ["50 Hz", "60 Hz", "40 Hz", "100 Hz"], correct: 0 },
+      { question: "Was ist der absolute Nullpunkt?", answers: ["-273,15 °C", "0 °C", "-100 °C", "-200 °C"], correct: 0 },
+      { question: "Wie viele Länder gibt es in Afrika?", answers: ["54", "60", "50", "48"], correct: 0 },
+      { question: "Wie viele Jahre dauert ein Sonnenumlauf um die Milchstraße?", answers: ["225 Mio.", "1 Mio.", "100.000", "1 Mrd."], correct: 0 },
+      { question: "Wie viele Sprachen gibt es weltweit ca.?", answers: ["ca. 7000", "ca. 3000", "ca. 5000", "ca. 1000"], correct: 0 },
+      { question: "Wie viel Prozent der Erde sind mit Wasser bedeckt?", answers: ["ca. 71%", "ca. 50%", "ca. 60%", "ca. 80%"], correct: 0 },
+      { question: "Wie viele Sterne sieht man mit bloßem Auge?", answers: ["ca. 6.000", "ca. 10.000", "ca. 1.000", "ca. 3.000"], correct: 0 }
+    ],
+    3: [
+      { question: "Wie viele Erden passen in die Sonne?", answers: ["ca. 1.300.000", "ca. 500.000", "ca. 900.000", "ca. 2.000.000"], correct: 0 },
+      { question: "Wie alt ist das Universum?", answers: ["ca. 13,8 Milliarden Jahre", "10 Milliarden", "20 Milliarden", "5 Milliarden"], correct: 0 },
+      { question: "Wie viele Atome hat ein Wassertropfen?", answers: ["ca. 1,5 Trilliarden", "ca. 1 Milliarde", "ca. 1 Billion", "ca. 10 Billionen"], correct: 0 },
+      { question: "Wie lange lebt eine Eintagsfliege?", answers: ["ca. 1 Tag", "ca. 1 Woche", "ca. 1 Monat", "ca. 10 Tage"], correct: 0 },
+      { question: "Wie viele Wirbel hat die menschliche Wirbelsäule?", answers: ["33", "30", "25", "35"], correct: 0 },
+      { question: "Wie viele Länder hat die EU?", answers: ["27", "28", "26", "30"], correct: 0 },
+      { question: "Wie viele Synapsen hat das menschliche Gehirn?", answers: ["ca. 100 Billionen", "ca. 10 Billionen", "ca. 1 Billion", "ca. 1 Million"], correct: 0 },
+      { question: "Wie viele Kontinente gibt es auf der Erde?", answers: ["7", "5", "6", "8"], correct: 0 },
+      { question: "Wie viele Tage hat der Februar im Schaltjahr?", answers: ["29", "28", "30", "27"], correct: 0 },
+      { question: "Wie lange braucht das Licht bis zum Mond?", answers: ["1,3 Sekunden", "3 Sekunden", "5 Sekunden", "10 Sekunden"], correct: 0 }
+    ]
+  }
+};
+
+let currentDifficulty = "";
